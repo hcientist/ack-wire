@@ -29,14 +29,10 @@ SECRET_KEY = '_g#wc@o0wrnaxrrb&y$u49*o2z48e^8b#a5k7r=f4=!3bo^&@='
 DEBUG = True
 
 SITE_ID = 1
-ALLOWED_HOSTS = ['ack-wire.theboardgame.party']
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'ack-wire.theboardgame.party').split(',')
 INTERNAL_IPS = ['127.0.0.1']
-CSRF_TRUSTED_ORIGINS = [
-        'https://ack-wire.theboardgame.party'
-]
-CORS_ORIGIN_WHITELIST = [
-    'ack-wire.theboardgame.party'
-]
+CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://ack-wire.theboardgame.party').split(',')
+CORS_ORIGIN_WHITELIST = os.environ.get('DJANGO_CORS_ORIGIN_WHITELIST', 'ack-wire.theboardgame.party').split(',')
 
 # Application definition
 
@@ -56,6 +52,7 @@ INSTALLED_APPS = [
     # 'django_extensions',
     'channels',
     'crispy_forms',
+    'crispy_bootstrap4',
     'django_select2',
     'game',
     'matcha',
@@ -63,6 +60,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -105,7 +103,20 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # WSGI_APPLICATION = 'acquire.wsgi.application'
-ASGI_APPLICATION = 'acquire.routing.application'
+ASGI_APPLICATION = 'acquire.asgi.application'
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379"),
+    },
+    "select2": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://127.0.0.1:6379"),
+    },
+}
+
+SELECT2_CACHE_BACKEND = "select2"
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -160,9 +171,9 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -170,6 +181,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR + "/staticfiles"
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 LOGGING = {
     'version': 1,

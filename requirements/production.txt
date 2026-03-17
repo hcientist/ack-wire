@@ -259,6 +259,8 @@ wcwidth==0.2.12
     # via
     #   -r requirements.in
     #   prompt-toolkit
+whitenoise==6.9.0
+    # via -r requirements.in
 zope-interface==6.1
     # via
     #   -r requirements.in
